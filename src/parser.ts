@@ -150,7 +150,7 @@ export class Parser {
         if (
           /^\{[0-9]+(\.[0-9]+)?\}$/.test(val) ||
           /^\{['\"`](.)*['\"`]\}$/.test(val) ||
-          /^\{(true|false)\}$/.test(val) ||
+          /^\{(true|false)\}$/.test(val)
         ) {
           propsList.push(`${key}: ${removeHeadAndTail(val)}`);
         } else if (/^\{(.)*\}$/.test(val)) {
@@ -204,7 +204,6 @@ export class Parser {
   }
 
   run(str: string) {
-    this.reset();
     this.str = str;
     let result = '';
     let lastIndex = 0;
@@ -213,6 +212,7 @@ export class Parser {
       this.handleUselessChar();
       result += this.str.slice(lastIndex, this.index);
       
+      this.reset();
       this.handleChar();
       if (this.head) {
         result += this.toString(this.head);
@@ -223,7 +223,8 @@ export class Parser {
       lastIndex = this.index;
     }
     
-    console.log(result);
+    // console.log(result);
+    return result
   }
 
   handleUselessChar() {
@@ -263,6 +264,7 @@ export class Parser {
             this.setState('tagBeginLeft');
             this.createNewChild();
             this.readName();
+            this.readProps();
           } else if (this.isState('tagBeginRight')) {
             if (this.lookNext() === '/') {
               this.setState('tagEndLeft');
@@ -272,6 +274,7 @@ export class Parser {
               this.setState('tagBeginLeft');
               this.createNewChild();
               this.readName();
+              this.readProps();
             }
           } else if (this.isState('tagEndRight')) {
             if (this.lookNext() === '/') {
@@ -282,6 +285,7 @@ export class Parser {
               this.setState('tagBeginLeft');
               this.createNewChild();
               this.readName();
+              this.readProps();
             }
           }
         }break;
@@ -375,10 +379,9 @@ export class Parser {
   readName() {
     let name = '';
     while (this.nextChar()) {
-      if (isValidChar(this.char)) {
-        name += this.char;
-      } else {
-        this.prevChar();
+      name += this.char;
+
+      if (!isValidChar(this.lookNext())) {
         break;
       }
     }
@@ -404,22 +407,43 @@ export class Parser {
   }
 
   readProps() {
-    let props = {};
+    let props: {
+      [key: string]: string | boolean
+    } = {};
     while (this.nextChar()) {
       if (isEmptyChar(this.char)) {
         //
+      } else if (this.char === '>' || this.lookNext(0, 2) === '/>') {
+        this.prevChar();
+        break;
       } else if (isValidChar(this.char)) {
-        let key = this.readKey();
+        let key: string = this.readKey();
+        let val: string | boolean = true;
         
         if (this.char === '=') {
           this.nextChar();
-          let val = this.readVal();
+          val = this.readVal();
+
+          if (val === null) {
+            this.throw(`Props val cannot be null`);
+          }
         }
+
+        props[key] = val;
+      } else {
+        this.throw(`Unexpect char: '${this.char}'`);
       }
+    }
+
+    if (this.current) {
+      this.current.props = props;
+      this.setState('tagProps');
+    } else {
+      this.throw('Current node does not exist');
     }
   }
 
-  readKey() {
+  readKey(): string {
     let key = '';
 
     while (this.char) {
@@ -432,7 +456,12 @@ export class Parser {
       this.nextChar();
     }
 
-    return key;
+    if (isValidName(key)) {
+      return key;
+    } else {
+      this.throw(`Invalid key name: '${key}'`);
+      return '';
+    }
   }
 
   readVal() {
@@ -443,34 +472,64 @@ export class Parser {
       case `"`: {
         val = this.readValStr(this.char, this.char);
       }break;
+      case `{`: {
+        val = this.readValStr(`{`, `}`);
+      }break;
       default: {
         this.throw(`Unexpect char '${this.char}' after '='`);
       }break;
     }
-    // while (this.char) {
-    //   if
-    //   this.nextChar();
-    // }
+    
     return val;
   }
 
   readValStr(startChar: string, endChar: string): string {
-    let str = '';
+    let str = startChar;
 
     if (startChar === endChar) {
-      let sc = startChar;
       while (this.nextChar()) {
-        if (isEmptyChar(this.char) || this.lookNext(0, 2) !== '/>') {
-          
-        }
+        // if (
+        //   isEmptyChar(this.char) ||
+        //   this.char === '>' ||
+        //   this.lookNext(0, 2) === '/>'
+        // ) {
+        //   break;
+        // }
+        
+        str += this.char;
+
         if (this.char === endChar && this.isNotTransChar()) {
-          if (end is ok) {
-            break;
-          }
+          break;
         }
       }
     } else {
-      //
+      let stack = [startChar];
+      let strType = '';
+      while (this.nextChar()) {
+        str += this.char;
+
+        if (strType === '') {
+          if ([`'`, `"`].includes(this.char)) {
+            strType = this.char;
+          } else if (this.char === startChar && this.isNotTransChar()) {
+            stack.push(startChar);
+          } else if (this.char === endChar && this.isNotTransChar()) {
+            
+            if (stack[stack.length - 1] === startChar) {
+              stack.pop();
+              if (stack.length === 0) {
+                break;
+              }
+            } else {
+              this.throw(`Unexpect char: '${this.char}'`);
+            }
+          }
+        } else {
+          if ([`'`, `"`].includes(this.char) && this.isNotTransChar()) {
+            strType = '';
+          }
+        }
+      }
     }
 
     return str;
