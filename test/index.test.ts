@@ -12,7 +12,7 @@ function Main() {
   return <main  >
     <title
       qwe
-      asd='asd'
+      // asd='asd'
       zxc="zxc"
       str={'asd'}
       str2={"asd"}
@@ -69,7 +69,7 @@ import Foo from './foo';
 
 // test fn
 function Main() {
-  return createElement(main, {  }, [ createElement(title, { qwe: true, asd: 'asd', zxc: "zxc", str: 'asd', str2: "asd", num: 9, num2: 0.9, bool: true, bool2: false, x: function(state, props, model) { return state.x; } }, [  ]), createElement(text, {  }, [  ]), createElement(text, { content: 'sad' }, [  ]), createElement(text, { content: 'sad' }, [  ]) ]);
+  return createElement(main, {  }, [ createElement(title, { qwe: true, zxc: "zxc", str: 'asd', str2: "asd", num: 9, num2: 0.9, bool: true, bool2: false, x: function(state, props, model) { return state.x; } }, [  ]), createElement(text, {  }, [  ]), createElement(text, { content: 'sad' }, [  ]), createElement(text, { content: 'sad' }, [  ]) ]);
 }
 
 function Login() {

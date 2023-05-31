@@ -413,6 +413,8 @@ export class Parser {
     while (this.nextChar()) {
       if (isEmptyChar(this.char)) {
         //
+      } else if (this.lookNext(0, 2) === '//') {
+        while (this.nextChar() !== '\n') {}
       } else if (this.char === '>' || this.lookNext(0, 2) === '/>') {
         this.prevChar();
         break;
