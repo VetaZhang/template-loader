@@ -42,7 +42,7 @@ interface IParserConfig {
   formatValue?(val: string): string
 }
 
-export class Parser {
+class Parser {
   str = '';
   index = -1;
   char = '';
@@ -319,17 +319,26 @@ export class Parser {
             }
           }
         }break;
+        case '{': {
+          if (
+            this.isState('tagBeginRight', 'tagEndRight') &&
+            this.lookNext(0, 3) === '{/*'
+          ) {
+            this.nextChar(2);
+            while (this.nextChar()) {
+              if (this.lookNext(0, 3) === '*/}') {
+                this.nextChar(2);
+                break;
+              }
+            }
+          }
+        }break;
         default: {
           if (isEmptyChar(this.char)) {
             //
           } else {
             this.throw(`Unexpected char: '${this.char}'`);
           }
-          // else if (this.isState('tagEndRight')) {
-          //   if (this.head === this.current) {
-          //     this.readContent();
-          //   }
-          // }
         }break;
       }
       
@@ -490,14 +499,6 @@ export class Parser {
 
     if (startChar === endChar) {
       while (this.nextChar()) {
-        // if (
-        //   isEmptyChar(this.char) ||
-        //   this.char === '>' ||
-        //   this.lookNext(0, 2) === '/>'
-        // ) {
-        //   break;
-        // }
-        
         str += this.char;
 
         if (this.char === endChar && this.isNotTransChar()) {
@@ -537,3 +538,5 @@ export class Parser {
     return str;
   }
 }
+
+export default Parser;
