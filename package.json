@@ -1,6 +1,6 @@
 {
-  "name": "ts-lib-demo",
-  "version": "1.0.0",
+  "name": "template-loader",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
