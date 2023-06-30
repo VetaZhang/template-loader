@@ -37,7 +37,6 @@ interface INode {
 
 interface IParserConfig {
   funcName?: string,
-  presetTagName?: string[],
   textTagName?: string[],
   formatValue?(val: string): string
 }
@@ -65,7 +64,6 @@ class Parser {
 
   config: {
     funcName: string,
-    presetTagName: string[],
     textTagName: string[],
     formatValue(val: string): string
   }
@@ -73,7 +71,6 @@ class Parser {
   constructor(config: IParserConfig = {}) {
     this.config = Object.assign({
       funcName: 'createElement',
-      presetTagName: [],
       textTagName: ['text'],
       formatValue(val: string) {
         return val;
@@ -133,13 +130,13 @@ class Parser {
   }
 
   toString(obj: INode): string {
-    const { funcName, presetTagName, formatValue } = this.config;
+    const { funcName, formatValue } = this.config;
 
     let tagName = '';
-    if (presetTagName.includes(obj.name)) {
-      tagName = `'${obj.name}'`;
-    } else {
+    if (/^[A-Z]/.test(obj.name)) {
       tagName = obj.name;
+    } else {
+      tagName = `'${obj.name}'`;
     }
     
     let propsList = [];

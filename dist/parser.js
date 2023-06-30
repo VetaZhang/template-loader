@@ -35,7 +35,6 @@ class Parser {
         this.current = null;
         this.config = Object.assign({
             funcName: 'createElement',
-            presetTagName: [],
             textTagName: ['text'],
             formatValue(val) {
                 return val;
@@ -86,13 +85,13 @@ class Parser {
         return this.head;
     }
     toString(obj) {
-        const { funcName, presetTagName, formatValue } = this.config;
+        const { funcName, formatValue } = this.config;
         let tagName = '';
-        if (presetTagName.includes(obj.name)) {
-            tagName = `'${obj.name}'`;
+        if (/^[A-Z]/.test(obj.name)) {
+            tagName = obj.name;
         }
         else {
-            tagName = obj.name;
+            tagName = `'${obj.name}'`;
         }
         let propsList = [];
         Object.keys(obj.props).forEach((key) => {

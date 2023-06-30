@@ -13,7 +13,6 @@ interface INode {
 }
 interface IParserConfig {
     funcName?: string;
-    presetTagName?: string[];
     textTagName?: string[];
     formatValue?(val: string): string;
 }
@@ -27,7 +26,6 @@ declare class Parser {
     current: null | INode;
     config: {
         funcName: string;
-        presetTagName: string[];
         textTagName: string[];
         formatValue(val: string): string;
     };

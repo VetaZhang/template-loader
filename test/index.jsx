@@ -18,9 +18,9 @@ function Main() {
       bool2={false}
       x={state.x}
     />
-    <text
+    <Title
     >
-    </text>
+    </Title>
     {/* <text></text> */}
     {/* <text></text> */}
     <text>
